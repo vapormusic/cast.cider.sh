@@ -29,8 +29,8 @@ import { AdsTracker, SenderTracker, ContentTracker } from './cast_analytics.js';
  */
 const ID_REGEX = '\/?([^\/]+)\/?$';
 const CONTENT_URL = 
-  'https://storage.googleapis.com/cpe-sample-media/content.json';
-
+  '';
+// https://storage.googleapis.com/cpe-sample-media/content.json
 const context = cast.framework.CastReceiverContext.getInstance();
 const CUSTOM_CHANNEL = 'urn:x-cast:com.ciderapp.customdata';
 context.addCustomMessageListener(CUSTOM_CHANNEL, function(customEvent) {
@@ -61,10 +61,10 @@ const castDebugLogger = cast.debug.CastDebugLogger.getInstance();
      */
       castDebugLogger.setEnabled(true);
 
-    // /**
-    //  * Show debug overlay.
-    //  */
-    //   castDebugLogger.showDebugLogs(true);
+    /**
+     * Show debug overlay.
+     */
+      castDebugLogger.showDebugLogs(true);
   }
 });
 
@@ -122,26 +122,7 @@ const contentTracker = new ContentTracker();
 function addBreaks(mediaInformation) {
   castDebugLogger.debug(LOG_RECEIVER_TAG, "addBreaks: " +
     JSON.stringify(mediaInformation));
-  return fetchMediaById('fbb_ad')
-  .then((clip1) => {
-    mediaInformation.breakClips = [
-      {
-        id: 'fbb_ad',
-        title: clip1.title,
-        contentUrl: clip1.stream.dash,
-        contentType: 'application/dash+xml',
-        whenSkippable: 5
-      }
-    ];
-
-    mediaInformation.breaks = [
-      {
-        id: 'pre-roll',
-        breakClipIds: ['fbb_ad'],
-        position: 0
-      }
-    ];
-  });
+  return ""
 }
 
 /**
@@ -204,22 +185,7 @@ playerManager.setMessageInterceptor(
     let sourceId = source.match(ID_REGEX)[1];
 
     // Add breaks to the media information and set the contentUrl
-    return new Promise(() => {
-      return "";}).then(() => {
-      if (sourceId.includes('.')) {
-        castDebugLogger.debug(LOG_RECEIVER_TAG,
-          "Interceptor received full URL");
-        loadRequestData.media.contentUrl = source;
-        return loadRequestData;
-      }
-    }).catch((errorMessage) => {
-      let error = new cast.framework.messages.ErrorData(
-        cast.framework.messages.ErrorType.LOAD_FAILED);
-      error.reason = cast.framework.messages.ErrorReason.INVALID_REQUEST;
-      castDebugLogger.error(LOG_RECEIVER_TAG, errorMessage);
-      return error;
-    });
-    addBreaks(loadRequestData.media)
+    return addBreaks(loadRequestData.media)
     .then(() => {
       // If the source is a url that points to an asset don't fetch from backend
       if (sourceId.includes('.')) {

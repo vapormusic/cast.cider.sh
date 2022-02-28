@@ -204,7 +204,21 @@ playerManager.setMessageInterceptor(
     let sourceId = source.match(ID_REGEX)[1];
 
     // Add breaks to the media information and set the contentUrl
-    return ''
+    return new Promise(() => {
+      return "";}).then(() => {
+      if (sourceId.includes('.')) {
+        castDebugLogger.debug(LOG_RECEIVER_TAG,
+          "Interceptor received full URL");
+        loadRequestData.media.contentUrl = source;
+        return loadRequestData;
+      }
+    }).catch((errorMessage) => {
+      let error = new cast.framework.messages.ErrorData(
+        cast.framework.messages.ErrorType.LOAD_FAILED);
+      error.reason = cast.framework.messages.ErrorReason.INVALID_REQUEST;
+      castDebugLogger.error(LOG_RECEIVER_TAG, errorMessage);
+      return error;
+    });
     addBreaks(loadRequestData.media)
     .then(() => {
       // If the source is a url that points to an asset don't fetch from backend

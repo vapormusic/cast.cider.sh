@@ -61,10 +61,10 @@ const castDebugLogger = cast.debug.CastDebugLogger.getInstance();
      */
       castDebugLogger.setEnabled(true);
 
-    /**
-     * Show debug overlay.
-     */
-      castDebugLogger.showDebugLogs(true);
+    // /**
+    //  * Show debug overlay.
+    //  */
+    //   castDebugLogger.showDebugLogs(true);
   }
 });
 

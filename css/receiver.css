@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 body {
-  --playback-logo-image: url('res/logo_googleg_color_2x_web_48dp.png');
+  --playback-logo-image: url('res/icon.png');
 }
 
 cast-media-player {
@@ -41,7 +41,7 @@ cast-media-player {
 /* Sample Overlay Text                               */
 /* ------------------------------------------------- */
 cast-media-player:after {
-  content: "SAMPLE";
+  /* content: "SAMPLE"; */
   position: absolute;
   left: 0;
   right: 0;

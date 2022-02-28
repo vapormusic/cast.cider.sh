@@ -36,11 +36,15 @@ const CUSTOM_CHANNEL = 'urn:x-cast:com.ciderapp.customdata';
 context.addCustomMessageListener(CUSTOM_CHANNEL, function(customEvent) {
   // handle customEvent.
   castDebugLogger.info('customMsg', customEvent);
+  if (customEvent?.data?.ip){
+    setupWS(customEvent.data.ip);
+  }
 });
 const playerManager = context.getPlayerManager();
 
 
 const LOG_RECEIVER_TAG = 'Receiver';
+var WebSocketIP = null;
 
 /**
  * Debug Logger
@@ -55,16 +59,16 @@ const castDebugLogger = cast.debug.CastDebugLogger.getInstance();
  */
  context.addEventListener(cast.framework.system.EventType.READY, () => {
   if (!castDebugLogger.debugOverlayElement_) {
-    /**
-     *  Enable debug logger and show a 'DEBUG MODE' tag at
-     *  top left corner.
-     */
-      castDebugLogger.setEnabled(true);
+    // /**
+    //  *  Enable debug logger and show a 'DEBUG MODE' tag at
+    //  *  top left corner.
+    //  */
+    //   castDebugLogger.setEnabled(true);
 
-    /**
-     * Show debug overlay.
-     */
-      castDebugLogger.showDebugLogs(true);
+    // /**
+    //  * Show debug overlay.
+    //  */
+    //   castDebugLogger.showDebugLogs(true);
   }
 });
 
@@ -124,23 +128,23 @@ function addBreaks(mediaInformation) {
     JSON.stringify(mediaInformation));
   return fetchMediaById('fbb_ad')
   .then((clip1) => {
-    mediaInformation.breakClips = [
-      {
-        id: 'fbb_ad',
-        title: clip1.title,
-        contentUrl: clip1.stream.dash,
-        contentType: 'application/dash+xml',
-        whenSkippable: 5
-      }
-    ];
+  //   mediaInformation.breakClips = [
+  //     {
+  //       id: 'fbb_ad',
+  //       title: clip1.title,
+  //       contentUrl: clip1.stream.dash,
+  //       contentType: 'application/dash+xml',
+  //       whenSkippable: 5
+  //     }
+  //   ];
 
-    mediaInformation.breaks = [
-      {
-        id: 'pre-roll',
-        breakClipIds: ['fbb_ad'],
-        position: 0
-      }
-    ];
+  //   mediaInformation.breaks = [
+  //     {
+  //       id: 'pre-roll',
+  //       breakClipIds: ['fbb_ad'],
+  //       position: 0
+  //     }
+  //   ];
   });
 }
 
@@ -172,74 +176,73 @@ function fetchMediaById(id) {
   });
 }
 
-
-/**
- * Intercept the LOAD request to load and set the contentUrl and add ads.
- */
-playerManager.setMessageInterceptor(
-  cast.framework.messages.MessageType.LOAD, loadRequestData => {
-    castDebugLogger.debug(LOG_RECEIVER_TAG,
-      `loadRequestData: ${JSON.stringify(loadRequestData)}`);
+// /**
+//  * Intercept the LOAD request to load and set the contentUrl and add ads.
+//  */
+// playerManager.setMessageInterceptor(
+//   cast.framework.messages.MessageType.LOAD, loadRequestData => {
+//     castDebugLogger.debug(LOG_RECEIVER_TAG,
+//       `loadRequestData: ${JSON.stringify(loadRequestData)}`);
     
-    // If the loadRequestData is incomplete return an error message
-    if (!loadRequestData || !loadRequestData.media) {
-      const error = new cast.framework.messages.ErrorData(
-        cast.framework.messages.ErrorType.LOAD_FAILED);
-      error.reason = cast.framework.messages.ErrorReason.INVALID_REQUEST;
-      return error;
-    }
+//     // If the loadRequestData is incomplete return an error message
+//     if (!loadRequestData || !loadRequestData.media) {
+//       const error = new cast.framework.messages.ErrorData(
+//         cast.framework.messages.ErrorType.LOAD_FAILED);
+//       error.reason = cast.framework.messages.ErrorReason.INVALID_REQUEST;
+//       return error;
+//     }
 
-    // check all content source fields for asset URL or ID
-    let source = loadRequestData.media.contentUrl
-      || loadRequestData.media.entity || loadRequestData.media.contentId;
+//     // check all content source fields for asset URL or ID
+//     let source = loadRequestData.media.contentUrl
+//       || loadRequestData.media.entity || loadRequestData.media.contentId;
 
-    // If there is no source or a malformed ID then return an error.
-    if (!source || source == "" || !source.match(ID_REGEX)) {
-      let error = new cast.framework.messages.ErrorData(
-        cast.framework.messages.ErrorType.LOAD_FAILED);
-      error.reason = cast.framework.messages.ErrorReason.INVALID_REQUEST;
-      return error;
-    }
+//     // If there is no source or a malformed ID then return an error.
+//     if (!source || source == "" || !source.match(ID_REGEX)) {
+//       let error = new cast.framework.messages.ErrorData(
+//         cast.framework.messages.ErrorType.LOAD_FAILED);
+//       error.reason = cast.framework.messages.ErrorReason.INVALID_REQUEST;
+//       return error;
+//     }
 
-    let sourceId = source.match(ID_REGEX)[1];
+//     let sourceId = source.match(ID_REGEX)[1];
 
-    // Add breaks to the media information and set the contentUrl
-    return addBreaks(loadRequestData.media)
-    .then(() => {
-      // If the source is a url that points to an asset don't fetch from backend
-      if (sourceId.includes('.')) {
-        castDebugLogger.debug(LOG_RECEIVER_TAG,
-          "Interceptor received full URL");
-          castDebugLogger.debug("source",
-          sourceId);
-        loadRequestData.media.contentUrl = source;
-        return loadRequestData;
-      }
+//     // Add breaks to the media information and set the contentUrl
+//     return addBreaks(loadRequestData.media)
+//     .then(() => {
+//       // If the source is a url that points to an asset don't fetch from backend
+//       if (sourceId.includes('.')) {
+//         castDebugLogger.debug(LOG_RECEIVER_TAG,
+//           "Interceptor received full URL");
+//           castDebugLogger.debug("source",
+//           sourceId);
+//         loadRequestData.media.contentUrl = source;
+//         return loadRequestData;
+//       }
 
-      // Fetch the contentUrl if provided an ID or entity URL
-      else {
-        castDebugLogger.debug(LOG_RECEIVER_TAG, "Interceptor received ID");
-        return fetchMediaById(sourceId)
-        .then((item) => {
-          let metadata = new cast.framework.messages.GenericMediaMetadata();
-          metadata.title = item.title;
-          metadata.subtitle = item.description;
-          loadRequestData.media.contentId = item.stream.dash;
-          loadRequestData.media.contentType = 'application/dash+xml';
-          loadRequestData.media.metadata = metadata;
-          return loadRequestData;
-        })
-      }
-    })
-    .catch((errorMessage) => {
-      let error = new cast.framework.messages.ErrorData(
-        cast.framework.messages.ErrorType.LOAD_FAILED);
-      error.reason = cast.framework.messages.ErrorReason.INVALID_REQUEST;
-      castDebugLogger.error(LOG_RECEIVER_TAG, errorMessage);
-      return error;
-    });
-  }
-);
+//       // Fetch the contentUrl if provided an ID or entity URL
+//       else {
+//         castDebugLogger.debug(LOG_RECEIVER_TAG, "Interceptor received ID");
+//         return fetchMediaById(sourceId)
+//         .then((item) => {
+//           let metadata = new cast.framework.messages.GenericMediaMetadata();
+//           metadata.title = item.title;
+//           metadata.subtitle = item.description;
+//           loadRequestData.media.contentId = item.stream.dash;
+//           loadRequestData.media.contentType = 'application/dash+xml';
+//           loadRequestData.media.metadata = metadata;
+//           return loadRequestData;
+//         })
+//       }
+//     })
+//     .catch((errorMessage) => {
+//       let error = new cast.framework.messages.ErrorData(
+//         cast.framework.messages.ErrorType.LOAD_FAILED);
+//       error.reason = cast.framework.messages.ErrorReason.INVALID_REQUEST;
+//       castDebugLogger.error(LOG_RECEIVER_TAG, errorMessage);
+//       return error;
+//     });
+//   }
+// );
 
 const playbackConfig = new cast.framework.PlaybackConfig();
 
@@ -257,25 +260,25 @@ castDebugLogger.info(LOG_RECEIVER_TAG,
 const controls = cast.framework.ui.Controls.getInstance();
 controls.clearDefaultSlotAssignments();
 
-/**
- * Assign buttons to control slots.
- */
-controls.assignButton(
-  cast.framework.ui.ControlsSlot.SLOT_SECONDARY_1,
-  cast.framework.ui.ControlsButton.QUEUE_PREV
-);
-controls.assignButton(
-  cast.framework.ui.ControlsSlot.SLOT_PRIMARY_1,
-  cast.framework.ui.ControlsButton.CAPTIONS
-);
-controls.assignButton(
-  cast.framework.ui.ControlsSlot.SLOT_PRIMARY_2,
-  cast.framework.ui.ControlsButton.SEEK_FORWARD_15
-);
-controls.assignButton(
-  cast.framework.ui.ControlsSlot.SLOT_SECONDARY_2,
-  cast.framework.ui.ControlsButton.QUEUE_NEXT
-);
+// /**
+//  * Assign buttons to control slots.
+//  */
+// controls.assignButton(
+//   cast.framework.ui.ControlsSlot.SLOT_SECONDARY_1,
+//   cast.framework.ui.ControlsButton.QUEUE_PREV
+// );
+// controls.assignButton(
+//   cast.framework.ui.ControlsSlot.SLOT_PRIMARY_1,
+//   cast.framework.ui.ControlsButton.CAPTIONS
+// );
+// controls.assignButton(
+//   cast.framework.ui.ControlsSlot.SLOT_PRIMARY_2,
+//   cast.framework.ui.ControlsButton.SEEK_FORWARD_15
+// );
+// controls.assignButton(
+//   cast.framework.ui.ControlsSlot.SLOT_SECONDARY_2,
+//   cast.framework.ui.ControlsButton.QUEUE_NEXT
+// );
 
 context.start({
   queue: new CastQueue(),
@@ -285,3 +288,95 @@ context.start({
                       cast.framework.messages.Command.QUEUE_NEXT |
                       cast.framework.messages.Command.STREAM_TRANSFER
 });
+
+function setupWS(url){
+  var socket = new WebSocket(url);
+  socket.onopen = (e) => {
+      // console.log(e);
+      // console.log('connected');
+      // app.connectedState = 1;
+      // if (getParameterByName("mode")) {
+      //     self.setMode(getParameterByName("mode"))
+      // } else {
+      //     self.setMode("default")
+      // }
+      // self.clearSelectedTrack()
+  }
+
+  socket.onclose = (e) => {
+      // console.log(e);
+      // console.log('disconnected');
+      //app.connectedState = 2;
+  }
+
+  socket.onerror = (e) => {
+      // console.log(e);
+      // console.log('error');
+      //app.connectedState = 2;
+  }
+
+  socket.onmessage = (e) => {
+     // castDebugLogger.info('customMsg', e.data);
+      const response = JSON.parse(e.data);
+      switch (response.type) {
+          default: 
+          //castDebugLogger.info('customMsg', response);
+          setMetadata(response.data);
+          break;
+          // case "musickitapi.search":
+          //         self.showArtist(response.data["artists"][0]["id"]);
+          //     break;
+          // case "musickitapi.playlist":    
+          // case "musickitapi.album":
+          //         if (self.screen == "album-page") {
+          //             self.albumPage.data = response.data
+          //         }
+          //     break;
+          // case "musickitapi.artist":
+          //         if (self.screen == "artist-page") {
+          //             self.artistPage.data = response.data
+          //         }
+          //     break;
+          // case "queue":
+          //         self.player.queue = response.data;
+          //     self.queue.temp = response.data["_queueItems"];
+          //     self.$forceUpdate()
+          //     break;
+          // case "lyrics":
+          //         self.player.lyrics = response.data;
+          //     self.$forceUpdate()
+          //     break;
+          // case "searchResultsLibrary":
+          //         self.search.results = response.data;
+          //     self.search.state = 2;
+          //     break;
+          // case "searchResults":
+          //         self.search.results = response.data;
+          //     self.search.state = 2;
+          //     break;
+          // case "playbackStateUpdate":
+          //         if (!self.player.userInteraction) {
+          //             self.updatePlaybackState(response.data)
+          //         }
+          //     break;
+          // case "maxVolume":
+          //     this.player.maxVolume = response.data;
+          //     break;
+      }}
+}
+
+function setMetadata(res){
+  let mediaInformation = playerManager.getMediaInformation();
+   castDebugLogger.info('customMsg',mediaInformation.metadata);
+  // castDebugLogger.info('cust', res);
+ // [ 21.536s] [cast.debug.CastDebugLogger] [customMsg] {"type":0,"metadataType":3,"title":"Cider","albumName":"Test build","artist":"Playing ...","images":[{"url":""}]} 
+ if (mediaInformation.metadata.title != res.name && mediaInformation.metadata.artist != res.artistName && mediaInformation.metadata.albumName != res.albumName) {
+   
+    mediaInformation.metadata.title = res.name;
+    mediaInformation.metadata.artist = res.artistName;
+    mediaInformation.metadata.albumName = res.albumName;
+    let width = 1024;
+    let height = 1024;
+    mediaInformation.metadata.images = [{url: (res.artwork?.url ?? '').replace('{w}', width ?? height).replace('{h}', height).replace('{f}', "webp").replace('{c}', ((width === 900) ? "sr" : "cc"))}]; 
+    playerManager.setMediaInformation(mediaInformation);}
+}

@@ -135,21 +135,22 @@ function fetchMediaById(id) {
   castDebugLogger.debug(LOG_RECEIVER_TAG, "fetching id: " + id);
 
   return new Promise((accept, reject) => {
-    fetch(CONTENT_URL)
-    .then((response) => response.json())
-    .then((obj) => {
-      if (obj) {
-        if (obj[id]) {
-          accept(obj[id]);
-        }
-        else {
-          reject(`${id} not found in repository`);
-        }
-      }
-      else {
-        reject('Content repository not found.');
-      }
-    });
+    // fetch(CONTENT_URL)
+    // .then((response) => response.json())
+    // .then((obj) => {
+    //   if (obj) {
+    //     if (obj[id]) {
+    //       accept(obj[id]);
+    //     }
+    //     else {
+    //       reject(`${id} not found in repository`);
+    //     }
+    //   }
+    //   else {
+    //     reject('Content repository not found.');
+    //   }
+    // });
+    return ''
   });
 }
 

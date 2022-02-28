@@ -377,6 +377,6 @@ function setMetadata(res){
     mediaInformation.metadata.albumName = res.albumName;
     let width = 1024;
     let height = 1024;
-    mediaInformation.metadata.images = [{url: (res.artwork?.url ?? '').replace('{w}', width ?? height).replace('{h}', height).replace('{f}', "webp").replace('{c}', "").replace('bb','')}]; 
+    mediaInformation.metadata.images = [{url: (res.artwork?.url ?? '').replace('{w}', width ?? height).replace('{h}', height).replace('{f}', "webp").replace('{c}', "").replace('1024x1024bb.','1024x1024.')}]; 
     playerManager.setMediaInformation(mediaInformation);}
 }

@@ -32,6 +32,11 @@ const CONTENT_URL =
   'https://storage.googleapis.com/cpe-sample-media/content.json';
 
 const context = cast.framework.CastReceiverContext.getInstance();
+const CUSTOM_CHANNEL = 'urn:x-cast:com.ciderapp.customdata';
+context.addCustomMessageListener(CUSTOM_CHANNEL, function(customEvent) {
+  // handle customEvent.
+  console.log(customEvent);
+});
 const playerManager = context.getPlayerManager();
 
 
@@ -48,20 +53,20 @@ const castDebugLogger = cast.debug.CastDebugLogger.getInstance();
  * Uncomment below line to enable debug logger, show a 'DEBUG MODE' tag at
  * top left corner and show debug overlay.
  */
-//  context.addEventListener(cast.framework.system.EventType.READY, () => {
-//   if (!castDebugLogger.debugOverlayElement_) {
-//     /**
-//      *  Enable debug logger and show a 'DEBUG MODE' tag at
-//      *  top left corner.
-//      */
-//       castDebugLogger.setEnabled(true);
+ context.addEventListener(cast.framework.system.EventType.READY, () => {
+  if (!castDebugLogger.debugOverlayElement_) {
+    /**
+     *  Enable debug logger and show a 'DEBUG MODE' tag at
+     *  top left corner.
+     */
+      castDebugLogger.setEnabled(true);
 
-//     /**
-//      * Show debug overlay.
-//      */
-//       castDebugLogger.showDebugLogs(true);
-//   }
-// });
+    /**
+     * Show debug overlay.
+     */
+      castDebugLogger.showDebugLogs(true);
+  }
+});
 
 /**
  * Set verbosity level for Core events.
@@ -199,7 +204,8 @@ playerManager.setMessageInterceptor(
     let sourceId = source.match(ID_REGEX)[1];
 
     // Add breaks to the media information and set the contentUrl
-    return addBreaks(loadRequestData.media)
+    return ''
+    addBreaks(loadRequestData.media)
     .then(() => {
       // If the source is a url that points to an asset don't fetch from backend
       if (sourceId.includes('.')) {

@@ -35,7 +35,7 @@ const context = cast.framework.CastReceiverContext.getInstance();
 const CUSTOM_CHANNEL = 'urn:x-cast:com.ciderapp.customdata';
 context.addCustomMessageListener(CUSTOM_CHANNEL, function(customEvent) {
   // handle customEvent.
-  console.log(customEvent);
+  castDebugLogger.info('customMsg', customEvent);
 });
 const playerManager = context.getPlayerManager();
 

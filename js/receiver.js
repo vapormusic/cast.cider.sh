@@ -29,8 +29,8 @@ import { AdsTracker, SenderTracker, ContentTracker } from './cast_analytics.js';
  */
 const ID_REGEX = '\/?([^\/]+)\/?$';
 const CONTENT_URL = 
-  '';
-// https://storage.googleapis.com/cpe-sample-media/content.json
+  'https://storage.googleapis.com/cpe-sample-media/content.json';
+
 const context = cast.framework.CastReceiverContext.getInstance();
 const CUSTOM_CHANNEL = 'urn:x-cast:com.ciderapp.customdata';
 context.addCustomMessageListener(CUSTOM_CHANNEL, function(customEvent) {
@@ -122,7 +122,26 @@ const contentTracker = new ContentTracker();
 function addBreaks(mediaInformation) {
   castDebugLogger.debug(LOG_RECEIVER_TAG, "addBreaks: " +
     JSON.stringify(mediaInformation));
-  return ""
+  return fetchMediaById('fbb_ad')
+  .then((clip1) => {
+    mediaInformation.breakClips = [
+      {
+        id: 'fbb_ad',
+        title: clip1.title,
+        contentUrl: clip1.stream.dash,
+        contentType: 'application/dash+xml',
+        whenSkippable: 5
+      }
+    ];
+
+    mediaInformation.breaks = [
+      {
+        id: 'pre-roll',
+        breakClipIds: ['fbb_ad'],
+        position: 0
+      }
+    ];
+  });
 }
 
 /**
@@ -135,22 +154,21 @@ function fetchMediaById(id) {
   castDebugLogger.debug(LOG_RECEIVER_TAG, "fetching id: " + id);
 
   return new Promise((accept, reject) => {
-    // fetch(CONTENT_URL)
-    // .then((response) => response.json())
-    // .then((obj) => {
-    //   if (obj) {
-    //     if (obj[id]) {
-    //       accept(obj[id]);
-    //     }
-    //     else {
-    //       reject(`${id} not found in repository`);
-    //     }
-    //   }
-    //   else {
-    //     reject('Content repository not found.');
-    //   }
-    // });
-    return ''
+    fetch(CONTENT_URL)
+    .then((response) => response.json())
+    .then((obj) => {
+      if (obj) {
+        if (obj[id]) {
+          accept(obj[id]);
+        }
+        else {
+          reject(`${id} not found in repository`);
+        }
+      }
+      else {
+        reject('Content repository not found.');
+      }
+    });
   });
 }
 
@@ -192,6 +210,8 @@ playerManager.setMessageInterceptor(
       if (sourceId.includes('.')) {
         castDebugLogger.debug(LOG_RECEIVER_TAG,
           "Interceptor received full URL");
+          castDebugLogger.debug("source",
+          sourceId);
         loadRequestData.media.contentUrl = source;
         return loadRequestData;
       }

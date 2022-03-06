@@ -176,73 +176,8 @@ function fetchMediaById(id) {
   });
 }
 
-// /**
-//  * Intercept the LOAD request to load and set the contentUrl and add ads.
-//  */
-// playerManager.setMessageInterceptor(
-//   cast.framework.messages.MessageType.LOAD, loadRequestData => {
-//     castDebugLogger.debug(LOG_RECEIVER_TAG,
-//       `loadRequestData: ${JSON.stringify(loadRequestData)}`);
-    
-//     // If the loadRequestData is incomplete return an error message
-//     if (!loadRequestData || !loadRequestData.media) {
-//       const error = new cast.framework.messages.ErrorData(
-//         cast.framework.messages.ErrorType.LOAD_FAILED);
-//       error.reason = cast.framework.messages.ErrorReason.INVALID_REQUEST;
-//       return error;
-//     }
 
-//     // check all content source fields for asset URL or ID
-//     let source = loadRequestData.media.contentUrl
-//       || loadRequestData.media.entity || loadRequestData.media.contentId;
 
-//     // If there is no source or a malformed ID then return an error.
-//     if (!source || source == "" || !source.match(ID_REGEX)) {
-//       let error = new cast.framework.messages.ErrorData(
-//         cast.framework.messages.ErrorType.LOAD_FAILED);
-//       error.reason = cast.framework.messages.ErrorReason.INVALID_REQUEST;
-//       return error;
-//     }
-
-//     let sourceId = source.match(ID_REGEX)[1];
-
-//     // Add breaks to the media information and set the contentUrl
-//     return addBreaks(loadRequestData.media)
-//     .then(() => {
-//       // If the source is a url that points to an asset don't fetch from backend
-//       if (sourceId.includes('.')) {
-//         castDebugLogger.debug(LOG_RECEIVER_TAG,
-//           "Interceptor received full URL");
-//           castDebugLogger.debug("source",
-//           sourceId);
-//         loadRequestData.media.contentUrl = source;
-//         return loadRequestData;
-//       }
-
-//       // Fetch the contentUrl if provided an ID or entity URL
-//       else {
-//         castDebugLogger.debug(LOG_RECEIVER_TAG, "Interceptor received ID");
-//         return fetchMediaById(sourceId)
-//         .then((item) => {
-//           let metadata = new cast.framework.messages.GenericMediaMetadata();
-//           metadata.title = item.title;
-//           metadata.subtitle = item.description;
-//           loadRequestData.media.contentId = item.stream.dash;
-//           loadRequestData.media.contentType = 'application/dash+xml';
-//           loadRequestData.media.metadata = metadata;
-//           return loadRequestData;
-//         })
-//       }
-//     })
-//     .catch((errorMessage) => {
-//       let error = new cast.framework.messages.ErrorData(
-//         cast.framework.messages.ErrorType.LOAD_FAILED);
-//       error.reason = cast.framework.messages.ErrorReason.INVALID_REQUEST;
-//       castDebugLogger.error(LOG_RECEIVER_TAG, errorMessage);
-//       return error;
-//     });
-//   }
-// );
 
 const playbackConfig = new cast.framework.PlaybackConfig();
 
@@ -311,27 +246,24 @@ function previous() {
 }
 
 playerManager.setMessageInterceptor(
-  cast.framework.messages.MessageType.QUEUE_NEXT, loadRequestData => {
-   if (socket){
-       next();
-   }
-   return null;
-})
-playerManager.setMessageInterceptor(
-  cast.framework.messages.MessageType.QUEUE_PREV, loadRequestData => {
-   if (socket){
-      previous();
-   }
-   return null;
-})
+  cast.framework.messages.MessageType.QUEUE_UPDATE, (data) => {
+    if (socket != null){
+      if (data.jump = 1) {
+        next();
+      } else if (data.jump = -1) {
+        previous();
+      }
+    }
+    return null;
+});
 playerManager.setMessageInterceptor(cast.framework.messages.MessageType.PAUSE, loadRequestData => {
-  if (socket){
+  if (socket != null){
      pause();
   }
   return null;
 })
 playerManager.setMessageInterceptor(cast.framework.messages.MessageType.PlAY, loadRequestData => {
-  if (socket){
+  if (socket != null){
      play();
   }
   return null;

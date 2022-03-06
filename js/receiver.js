@@ -199,7 +199,7 @@ controls.clearDefaultSlotAssignments();
 //  * Assign buttons to control slots.
 //  */
 controls.assignButton(
-  cast.framework.ui.ControlsSlot.SLOT_SECONDARY_1,
+  cast.framework.ui.ControlsSlot.SLOT_PRIMARY_1,
   cast.framework.ui.ControlsButton.QUEUE_PREV
 );
 // controls.assignButton(
@@ -211,7 +211,7 @@ controls.assignButton(
 //   cast.framework.ui.ControlsButton.SEEK_FORWARD_15
 // );
 controls.assignButton(
-  cast.framework.ui.ControlsSlot.SLOT_SECONDARY_2,
+  cast.framework.ui.ControlsSlot.SLOT_PRIMARY_2,
   cast.framework.ui.ControlsButton.QUEUE_NEXT
 );
 
@@ -256,17 +256,17 @@ playerManager.setMessageInterceptor(
     }
     return null;
 });
-playerManager.setMessageInterceptor(cast.framework.messages.MessageType.PAUSE, loadRequestData => {
+playerManager.setMessageInterceptor(cast.framework.messages.MessageType.PAUSE, data => {
   if (socket != null){
      pause();
   }
-  return null;
+  return data;
 })
-playerManager.setMessageInterceptor(cast.framework.messages.MessageType.PlAY, loadRequestData => {
+playerManager.setMessageInterceptor(cast.framework.messages.MessageType.PLAY, data => {
   if (socket != null){
      play();
   }
-  return null;
+  return data;
 })
 
 function setupWS(url){

@@ -263,10 +263,10 @@ controls.clearDefaultSlotAssignments();
 // /**
 //  * Assign buttons to control slots.
 //  */
-// controls.assignButton(
-//   cast.framework.ui.ControlsSlot.SLOT_SECONDARY_1,
-//   cast.framework.ui.ControlsButton.QUEUE_PREV
-// );
+controls.assignButton(
+  cast.framework.ui.ControlsSlot.SLOT_SECONDARY_1,
+  cast.framework.ui.ControlsButton.QUEUE_PREV
+);
 // controls.assignButton(
 //   cast.framework.ui.ControlsSlot.SLOT_PRIMARY_1,
 //   cast.framework.ui.ControlsButton.CAPTIONS
@@ -275,10 +275,10 @@ controls.clearDefaultSlotAssignments();
 //   cast.framework.ui.ControlsSlot.SLOT_PRIMARY_2,
 //   cast.framework.ui.ControlsButton.SEEK_FORWARD_15
 // );
-// controls.assignButton(
-//   cast.framework.ui.ControlsSlot.SLOT_SECONDARY_2,
-//   cast.framework.ui.ControlsButton.QUEUE_NEXT
-// );
+controls.assignButton(
+  cast.framework.ui.ControlsSlot.SLOT_SECONDARY_2,
+  cast.framework.ui.ControlsButton.QUEUE_NEXT
+);
 
 context.start({
   queue: new CastQueue(),
@@ -288,9 +288,57 @@ context.start({
                       cast.framework.messages.Command.QUEUE_NEXT |
                       cast.framework.messages.Command.STREAM_TRANSFER
 });
+var socket;
+function play() {
+  socket.send(JSON.stringify({
+      action: "play"
+  }))
+}
+function pause() {
+  socket.send(JSON.stringify({
+      action: "pause"
+  }))
+}
+function next() {
+  socket.send(JSON.stringify({
+      action: "next"
+  }))
+}
+function previous() {
+  socket.send(JSON.stringify({
+      action: "previous"
+  }))
+}
+
+playerManager.setMessageInterceptor(
+  cast.framework.messages.MessageType.QUEUE_NEXT, loadRequestData => {
+   if (socket){
+       next();
+   }
+   return null;
+})
+playerManager.setMessageInterceptor(
+  cast.framework.messages.MessageType.QUEUE_PREV, loadRequestData => {
+   if (socket){
+      previous();
+   }
+   return null;
+})
+playerManager.setMessageInterceptor(cast.framework.messages.MessageType.PAUSE, loadRequestData => {
+  if (socket){
+     pause();
+  }
+  return null;
+})
+playerManager.setMessageInterceptor(cast.framework.messages.MessageType.PlAY, loadRequestData => {
+  if (socket){
+     play();
+  }
+  return null;
+})
 
 function setupWS(url){
-  var socket = new WebSocket(url);
+  socket = new WebSocket(url);
   socket.onopen = (e) => {
       // console.log(e);
       // console.log('connected');

@@ -36,8 +36,30 @@ const CUSTOM_CHANNEL = 'urn:x-cast:com.ciderapp.customdata';
 context.addCustomMessageListener(CUSTOM_CHANNEL, function(customEvent) {
   // handle customEvent.
   castDebugLogger.info('customMsg', customEvent);
-  if (customEvent?.data?.ip){
+  if (customEvent?.data?.ip != null){
     setupWS(customEvent.data.ip);
+  }
+  if (customEvent?.data?.action != null){
+    switch (customEvent.data.action){
+      case "play":
+        play();
+        break;
+      case "pause":
+        pause();
+        break;
+      case "next":
+        next();
+        break;
+      case "previous":
+        previous();
+        break;
+      case "setMetadata":
+        setMetadata(customEvent.data.metadata);
+        break;
+      case "stop":
+        context.stop(); 
+        break; 
+    }
   }
 });
 const playerManager = context.getPlayerManager();

@@ -58,7 +58,7 @@ const castDebugLogger = cast.debug.CastDebugLogger.getInstance();
  * top left corner and show debug overlay.
  */
  context.addEventListener(cast.framework.system.EventType.READY, () => {
-  if (!castDebugLogger.debugOverlayElement_) {
+//  if (!castDebugLogger.debugOverlayElement_) {
     // /**
     //  *  Enable debug logger and show a 'DEBUG MODE' tag at
     //  *  top left corner.
@@ -69,7 +69,7 @@ const castDebugLogger = cast.debug.CastDebugLogger.getInstance();
     //  * Show debug overlay.
     //  */
       castDebugLogger.showDebugLogs(true);
-  }
+ // }
 });
 
 /**

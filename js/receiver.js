@@ -293,6 +293,11 @@ playerManager.setMessageInterceptor(cast.framework.messages.MessageType.PLAY, da
   }
   return data;
 })
+playerManager.setMessageInterceptor(
+    cast.framework.messages.MessageType.LOAD, loadRequestData => {
+      loadRequestData.media.hlsSegmentFormat = cast.framework.messages.HlsSegmentFormat.MP3;
+      return loadRequestData;
+});
 
 function setupWS(url){
   socket = new WebSocket(url);

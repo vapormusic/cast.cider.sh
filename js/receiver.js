@@ -32,6 +32,8 @@ const CONTENT_URL =
   'https://storage.googleapis.com/cpe-sample-media/content.json';
 
 const context = cast.framework.CastReceiverContext.getInstance();
+let castReceiverOptions = new cast.framework.CastReceiverOptions();
+castReceiverOptions.useShakaForHls = true;
 const CUSTOM_CHANNEL = 'urn:x-cast:com.ciderapp.customdata';
 context.addCustomMessageListener(CUSTOM_CHANNEL, function(customEvent) {
   // handle customEvent.
@@ -243,7 +245,8 @@ context.start({
   supportedCommands: cast.framework.messages.Command.ALL_BASIC_MEDIA |
                       cast.framework.messages.Command.QUEUE_PREV |
                       cast.framework.messages.Command.QUEUE_NEXT |
-                      cast.framework.messages.Command.STREAM_TRANSFER
+                      cast.framework.messages.Command.STREAM_TRANSFER,
+    useShakaForHls: true
 });
 var socket;
 function play() {

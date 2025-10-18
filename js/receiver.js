@@ -245,7 +245,7 @@ context.start({
                       cast.framework.messages.Command.QUEUE_PREV |
                       cast.framework.messages.Command.QUEUE_NEXT |
                       cast.framework.messages.Command.STREAM_TRANSFER,
-    useShakaForHls: false
+    useShakaForHls: true
 });
 var socket;
 function play() {

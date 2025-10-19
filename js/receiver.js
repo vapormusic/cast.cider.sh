@@ -397,27 +397,43 @@ function setMetadata(res){
 // create a audio element with Media Source Extensions
 let audio = new Audio();
 audio.autoplay = true;
-audio.controls = false;
+audio.controls = true;
+
 let mediaSource = new MediaSource();
 audio.src = URL.createObjectURL(mediaSource);
-let sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
-function base64ToArrayBuffer(base64) {
-    var binaryString = atob(base64);
-    var bytes = new Uint8Array(binaryString.length);
-    for (var i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
+
+let sourceBuffer, queue = [], started = false;
+
+mediaSource.addEventListener('sourceopen', () => {
+  sourceBuffer = mediaSource.addSourceBuffer('audio/mp4; codecs="mp4a.40.2"');
+  sourceBuffer.mode = 'sequence';
+
+  sourceBuffer.addEventListener('updateend', () => {
+    if (!started) {
+      audio.play().catch(console.error);
+      started = true;
     }
-    return bytes.buffer;
+    if (queue.length > 0 && !sourceBuffer.updating) {
+      sourceBuffer.appendBuffer(queue.shift());
+    }
+  });
+});
+
+function base64ToArrayBuffer(base64) {
+  const binaryString = atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes.buffer;
 }
-function sendChunkedMp3Audio(chunk){
-  if (mediaSource.readyState === 'open' && sourceBuffer && !sourceBuffer.updating) {
-    let bytes = base64ToArrayBuffer(chunk);
+
+function sendChunkedMp3Audio(chunk) {
+  if (!sourceBuffer) return;
+  const bytes = base64ToArrayBuffer(chunk);
+  if (sourceBuffer.updating) {
+    queue.push(bytes);
+  } else {
     sourceBuffer.appendBuffer(bytes);
   }
-
-  // play the audio
-  if (!audio.paused ) return;
-  audio.play().catch((error) => {
-    console.error('Error playing audio:', error);
-  });
 }

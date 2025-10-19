@@ -85,16 +85,16 @@ const castDebugLogger = cast.debug.CastDebugLogger.getInstance();
  */
  context.addEventListener(cast.framework.system.EventType.READY, () => {
   if (!castDebugLogger.debugOverlayElement_) {
-    // /**
-    //  *  Enable debug logger and show a 'DEBUG MODE' tag at
-    //  *  top left corner.
-    //  */
-    //   castDebugLogger.setEnabled(true);
+    /**
+     *  Enable debug logger and show a 'DEBUG MODE' tag at
+     *  top left corner.
+     */
+      castDebugLogger.setEnabled(true);
 
-    // /**
-    //  * Show debug overlay.
-    //  */
-    //   castDebugLogger.showDebugLogs(true);
+    /**
+     * Show debug overlay.
+     */
+      castDebugLogger.showDebugLogs(true);
   }
 });
 
@@ -401,15 +401,18 @@ audio.controls = false;
 let mediaSource = new MediaSource();
 audio.src = URL.createObjectURL(mediaSource);
 let sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
+function base64ToArrayBuffer(base64) {
+    var binaryString = atob(base64);
+    var bytes = new Uint8Array(binaryString.length);
+    for (var i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
+}
 function sendChunkedMp3Audio(chunk){
   if (mediaSource.readyState === 'open' && sourceBuffer && !sourceBuffer.updating) {
-    let byteCharacters = atob(chunk);
-    let byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-    let byteArray = new Uint8Array(byteNumbers);
-    sourceBuffer.appendBuffer(byteArray);
+    let bytes = base64ToArrayBuffer(chunk);
+    sourceBuffer.appendBuffer(bytes);
   }
 
   // play the audio

@@ -405,7 +405,7 @@ audio.src = URL.createObjectURL(mediaSource);
 let sourceBuffer, queue = [], started = false;
 
 mediaSource.addEventListener('sourceopen', () => {
-  sourceBuffer = mediaSource.addSourceBuffer('audio/mp4; codecs="mp4a.40.2"');
+  sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
   sourceBuffer.mode = 'sequence';
 
   sourceBuffer.addEventListener('updateend', () => {

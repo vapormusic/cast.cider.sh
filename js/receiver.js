@@ -60,6 +60,9 @@ context.addCustomMessageListener(CUSTOM_CHANNEL, function(customEvent) {
       case "stop":
         context.stop(); 
         break; 
+      case "sendChunkedMp3Audio":
+        sendChunkedMp3Audio(customEvent.data.audio);
+        break;
     }
   }
 });
@@ -388,4 +391,30 @@ function setMetadata(res){
     let height = 1024;
     mediaInformation.metadata.images = [{url: (res.artwork?.url ?? '').replace('{w}', width ?? height).replace('{h}', height).replace('{f}', "webp").replace('{c}', "").replace('1024x1024bb.','1024x1024.')}]; 
     playerManager.setMediaInformation(mediaInformation);}
+}
+
+
+// create a audio element with Media Source Extensions
+let audio = new Audio();
+audio.autoplay = true;
+audio.controls = false;
+let mediaSource = new MediaSource();
+audio.src = URL.createObjectURL(mediaSource);
+let sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
+function sendChunkedMp3Audio(chunk){
+  if (mediaSource.readyState === 'open' && sourceBuffer && !sourceBuffer.updating) {
+    let byteCharacters = atob(chunk);
+    let byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    let byteArray = new Uint8Array(byteNumbers);
+    sourceBuffer.appendBuffer(byteArray);
+  }
+
+  // play the audio
+  if (!audio.paused ) return;
+  audio.play().catch((error) => {
+    console.error('Error playing audio:', error);
+  });
 }

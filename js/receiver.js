@@ -397,7 +397,7 @@ function setMetadata(res){
 // create a audio element with Media Source Extensions
 let audio = new Audio();
 audio.autoplay = true;
-audio.controls = true;
+audio.controls = false;
 audio.crossOrigin = "anonymous";
 
 

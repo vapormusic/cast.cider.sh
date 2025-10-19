@@ -398,42 +398,46 @@ function setMetadata(res){
 let audio = new Audio();
 audio.autoplay = true;
 audio.controls = true;
+audio.crossOrigin = "anonymous";
+audio.src = "https://ia600806.us.archive.org/24/items/ChloeBurbank-Joji/1-03%20you%20suck%20charlie.mp3";
+document.body.appendChild(audio);
+audio.play().catch(console.error);
 
 let mediaSource = new MediaSource();
-audio.src = URL.createObjectURL(mediaSource);
+// audio.src = URL.createObjectURL(mediaSource);
 
-let sourceBuffer, queue = [], started = false;
+// let sourceBuffer, queue = [], started = false;
 
-mediaSource.addEventListener('sourceopen', () => {
-  sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
-  sourceBuffer.mode = 'sequence';
+// mediaSource.addEventListener('sourceopen', () => {
+//   sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
+//   sourceBuffer.mode = 'sequence';
 
-  sourceBuffer.addEventListener('updateend', () => {
-    if (!started) {
-      audio.play().catch(console.error);
-      started = true;
-    }
-    if (queue.length > 0 && !sourceBuffer.updating) {
-      sourceBuffer.appendBuffer(queue.shift());
-    }
-  });
-});
+//   sourceBuffer.addEventListener('updateend', () => {
+//     if (!started) {
+//       audio.play().catch(console.error);
+//       started = true;
+//     }
+//     if (queue.length > 0 && !sourceBuffer.updating) {
+//       sourceBuffer.appendBuffer(queue.shift());
+//     }
+//   });
+// });
 
-function base64ToArrayBuffer(base64) {
-  const binaryString = atob(base64);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes.buffer;
-}
+// function base64ToArrayBuffer(base64) {
+//   const binaryString = atob(base64);
+//   const bytes = new Uint8Array(binaryString.length);
+//   for (let i = 0; i < binaryString.length; i++) {
+//     bytes[i] = binaryString.charCodeAt(i);
+//   }
+//   return bytes.buffer;
+// }
 
-function sendChunkedMp3Audio(chunk) {
-  if (!sourceBuffer) return;
-  const bytes = base64ToArrayBuffer(chunk);
-  if (sourceBuffer.updating) {
-    queue.push(bytes);
-  } else {
-    sourceBuffer.appendBuffer(bytes);
-  }
-}
+// function sendChunkedMp3Audio(chunk) {
+//   if (!sourceBuffer) return;
+//   const bytes = base64ToArrayBuffer(chunk);
+//   if (sourceBuffer.updating) {
+//     queue.push(bytes);
+//   } else {
+//     sourceBuffer.appendBuffer(bytes);
+//   }
+// }
